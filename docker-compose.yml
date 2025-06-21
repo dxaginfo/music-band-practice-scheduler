@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  server:
+    build:
+      context: ./server
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/band-scheduler
+      - JWT_SECRET=secretkey123
+      - JWT_EXPIRE=30d
+      - JWT_COOKIE_EXPIRE=30
+    depends_on:
+      - mongo
+    command: npm run dev
+
+  client:
+    build:
+      context: ./client
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - server
+    stdin_open: true
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000/api
+    command: npm start
+
+  mongo:
+    image: mongo:4.4
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
